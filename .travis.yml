@@ -1,0 +1,17 @@
+os: linux
+language: python
+python: [ "3.8" ]
+dist: xenial
+compiler: [ gcc ]
+install:
+  - pip install conan
+  - conan user
+script:
+  # Generate Conan files
+  - mkdir conan
+  - cd conan
+  - conan install
+  - cd ..
+  # Build project
+  - cmake . -G "Unix Makefiles"
+  - cmake --build
