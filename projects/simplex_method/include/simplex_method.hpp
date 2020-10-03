@@ -16,6 +16,7 @@ namespace simplex_method {
 
         T ZERO = T();
 
+        bool max_;
         std::size_t n_, m_;
         // F = coefficients[0] + sum({i = 1..n} coefficients[i] * x_i) -> max
         std::vector<T> coefficients_;
@@ -23,7 +24,7 @@ namespace simplex_method {
         Matrix<T> conditions_;
 
     public:
-        NormalizedOptimizationTask(size_t n, size_t m, const std::vector<T> &coefficients,
+        NormalizedOptimizationTask(bool max, size_t n, size_t m, const std::vector<T> &coefficients,
                                    const std::vector<std::vector<T>> &conditions);
         OptimizationResult<T> compute();
 
@@ -32,9 +33,10 @@ namespace simplex_method {
     };
 
     template<typename T>
-    NormalizedOptimizationTask<T>::NormalizedOptimizationTask(size_t n, size_t m, std::vector<T> const &coefficients,
+    NormalizedOptimizationTask<T>::NormalizedOptimizationTask(bool max, size_t n, size_t m,
+                                                              std::vector<T> const &coefficients,
                                                               std::vector<std::vector<T>> const &conditions)
-        : n_(n), m_(m), coefficients_(coefficients), conditions_(conditions) {}
+        : max_(max), n_(n), m_(m), coefficients_(coefficients), conditions_(conditions) {}
 
     template<typename T>
     OptimizationResult<T> NormalizedOptimizationTask<T>::compute() {
@@ -143,7 +145,7 @@ namespace simplex_method {
         //for (size_t slot = 0; slot < freeVariables; ++slot) x[indices[slot]] = ZERO;
         for (size_t slot = freeVariables, i = 0; slot < n_; ++slot) { x[indices[slot]] = matrix.at(i++).at(0); }
 
-        return SuccessfulOptimizationResult<T>{matrix[m_][0], x};
+        return SuccessfulOptimizationResult<T>{max_ ? -matrix[m_][0] : matrix[m_][0], x};
     }
 
     template<typename T>
