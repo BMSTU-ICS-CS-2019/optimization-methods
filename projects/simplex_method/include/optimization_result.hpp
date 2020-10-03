@@ -1,5 +1,4 @@
-#ifndef INCLUDE_OPTIMIZATION_RESULT_HPP_
-#define INCLUDE_OPTIMIZATION_RESULT_HPP_
+#pragma once
 
 #include <iostream>
 #include <simplex_method_definitions.hpp>
@@ -40,5 +39,3 @@ std::ostream &operator<<(std::ostream &out, simplex_method::OptimizationResult<T
                            ? out << "[no result]: " << std::get<std::string>(result)
                            : out << std::get<simplex_method::SuccessfulOptimizationResult<T>>(result);
 }
-
-#endif//INCLUDE_OPTIMIZATION_RESULT_HPP_
