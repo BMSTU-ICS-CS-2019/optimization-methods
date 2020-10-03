@@ -26,10 +26,10 @@ namespace simplex_method {
     public:
         NormalizedOptimizationTask(bool max, size_t n, size_t m, const std::vector<T> &coefficients,
                                    const std::vector<std::vector<T>> &conditions);
-        OptimizationResult<T> compute();
+        [[nodiscard]] OptimizationResult<T> compute() const;
 
     private:// helper methods
-        void swapMatrixLines_(Matrix<T> &simplexMatrix, size_t iX, size_t jX);
+        void swapMatrixLines_(Matrix<T> &simplexMatrix, size_t iX, size_t jX) const;
     };
 
     template<typename T>
@@ -39,7 +39,7 @@ namespace simplex_method {
         : max_(max), n_(n), m_(m), coefficients_(coefficients), conditions_(conditions) {}
 
     template<typename T>
-    OptimizationResult<T> NormalizedOptimizationTask<T>::compute() {
+    [[nodiscard]] OptimizationResult<T> NormalizedOptimizationTask<T>::compute() const {
         // step 1: fill the initial matrix
         std::vector<size_t> indices(n_);
         for (size_t index = 0; index < n_; index++) indices[index] = index;
@@ -149,7 +149,8 @@ namespace simplex_method {
     }
 
     template<typename T>
-    void NormalizedOptimizationTask<T>::swapMatrixLines_(Matrix<T> &simplexMatrix, const size_t iX, const size_t jX) {
+    void NormalizedOptimizationTask<T>::swapMatrixLines_(Matrix<T> &simplexMatrix, const size_t iX,
+                                                         const size_t jX) const {
         auto const rowLength = n_ - m_ + 2u;
 
         // center of rotation
@@ -167,6 +168,6 @@ namespace simplex_method {
         for (size_t i = 0; i <= m_; ++i) if (i != iX) simplexMatrix[i][jX] /= invertedCenter;
         //@formatter:on
 
-        rowIX[jX] = std::pow(rowIX[jX], -1);
+        rowIX[jX] = 1 / rowIX[jX];
     }
 }// namespace simplex_method

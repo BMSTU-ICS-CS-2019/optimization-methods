@@ -25,7 +25,7 @@ namespace simplex_method {
     // Ax <= b
     // x >= 0
     template<typename T>
-    NormalizedOptimizationTask<T> normalizedOptimizationTask(bool max, std::vector<T> const &c,
+    [[nodiscard]] NormalizedOptimizationTask<T> normalizedOptimizationTask(bool max, std::vector<T> const &c,
                                                              std::vector<std::vector<T>> const &a,
                                                              std::vector<T> const &b) {
         auto const freeVariables = c.size();// n - m
