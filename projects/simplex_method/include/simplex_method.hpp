@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <iostream>
-#include <optimization_result.h>
+#include <optimization_result.hpp>
 #include <optional>
 #include <type_traits>
 #include <variant>

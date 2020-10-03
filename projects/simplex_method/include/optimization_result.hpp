@@ -1,8 +1,8 @@
-#ifndef INCLUDE_OPTIMIZATION_RESULT_H_
-#define INCLUDE_OPTIMIZATION_RESULT_H_
+#ifndef INCLUDE_OPTIMIZATION_RESULT_HPP_
+#define INCLUDE_OPTIMIZATION_RESULT_HPP_
 
 #include <iostream>
-#include <simplex_method_definitions.h>
+#include <simplex_method_definitions.hpp>
 #include <variant>
 #include <vector>
 
@@ -41,4 +41,4 @@ std::ostream &operator<<(std::ostream &out, simplex_method::OptimizationResult<T
                            : out << std::get<simplex_method::SuccessfulOptimizationResult<T>>(result);
 }
 
-#endif//INCLUDE_OPTIMIZATION_RESULT_H_
+#endif//INCLUDE_OPTIMIZATION_RESULT_HPP_
