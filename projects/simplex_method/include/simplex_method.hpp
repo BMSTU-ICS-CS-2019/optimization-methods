@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <optimization_result.hpp>
 #include <optional>
 #include <type_traits>
@@ -26,10 +27,13 @@ namespace simplex_method {
     public:
         NormalizedOptimizationTask(bool max, size_t n, size_t m, const std::vector<T> &coefficients,
                                    const std::vector<std::vector<T>> &conditions);
-        [[nodiscard]] OptimizationResult<T> compute() const;
+
+        [[nodiscard]] OptimizationResult<T> compute(std::ostream &debugOut) const;
 
     private:// helper methods
         void swapMatrixLines_(Matrix<T> &simplexMatrix, size_t iX, size_t jX) const;
+
+        void appendVariableIndices_(std::ostream &out, std::vector<size_t> const &indices) const;
     };
 
     template<typename T>
@@ -39,7 +43,7 @@ namespace simplex_method {
         : max_(max), n_(n), m_(m), coefficients_(coefficients), conditions_(conditions) {}
 
     template<typename T>
-    [[nodiscard]] OptimizationResult<T> NormalizedOptimizationTask<T>::compute() const {
+    [[nodiscard]] OptimizationResult<T> NormalizedOptimizationTask<T>::compute(std::ostream &debugOut) const {
         // step 1: fill the initial matrix
         std::vector<size_t> indices(n_);
         for (size_t index = 0; index < n_; index++) indices[index] = index;
@@ -62,6 +66,8 @@ namespace simplex_method {
             row.push_back(ZERO);// zero
             for (auto const &coefficient : coefficients_) row.push_back(coefficient);
         }
+        appendVariableIndices_(debugOut << "Generated initial simplex matrix:\n" << matrix << "\n", indices);
+        debugOut << std::endl;
 
         // step 2: reach target solution
         {
@@ -94,8 +100,12 @@ namespace simplex_method {
                         }
                         if (resolvingColumn == 0) return "Resolving column cannot be found";
 
+                        debugOut << "Swapping row " << resolvingRow << " with column " << resolvingColumn << std::endl;
                         std::swap(indices[resolvingColumn - 1], indices[rowLength - 2 + resolvingRow]);
                         swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
+
+                        appendVariableIndices_(debugOut << "Resulting matrix:\n" << matrix << "\n", indices);
+                        debugOut << std::endl;
 
                         // current super-iteration has reached its end
                         doContinue = true;
@@ -106,8 +116,7 @@ namespace simplex_method {
                 doContinue = false;
             } while (doContinue);
         }
-
-        // Target solution was found
+        debugOut << "Initial target solution has been found" << std::endl;
 
         // step 3: find the most appropriate value of F
         {
@@ -130,8 +139,12 @@ namespace simplex_method {
                         }
                         if (!ratio) return "Resolving row cannot be found";
 
+                        debugOut << "Swapping row " << resolvingRow << " with column " << resolvingColumn << std::endl;
                         std::swap(indices[resolvingColumn - 1], indices[rowLength - 2 + resolvingRow]);
                         swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
+
+                        appendVariableIndices_(debugOut << "Resulting matrix:\n" << matrix << "\n", indices);
+                        debugOut << std::endl;
 
                         // current super-iteration has reached its end
                         doContinue = true;
@@ -140,6 +153,7 @@ namespace simplex_method {
                 }
             } while (doContinue);
         }
+        debugOut << "Target solution has been found" << std::endl;
 
         std::vector<T> x(n_);// all values will be default-constructed, i.e. zeroed
         //for (size_t slot = 0; slot < freeVariables; ++slot) x[indices[slot]] = ZERO;
@@ -169,5 +183,50 @@ namespace simplex_method {
         //@formatter:on
 
         rowIX[jX] = 1 / rowIX[jX];
+    }
+
+    template<typename T>
+    void NormalizedOptimizationTask<T>::appendVariableIndices_(std::ostream &out, std::vector<size_t> const& indices) const {
+        out << "Free variables: {";
+        size_t i = 0;
+        {
+            auto const freeVariables = n_ - m_;
+            while (true) {
+                out << "x" << indices[i] + 1;
+                if (++i == freeVariables) break;
+                else out << ", ";
+            }
+        }
+
+        out << "}, Basis variables: {";
+        while (true) {
+            out << "x" << indices[i] + 1;
+            if (++i == n_) break;
+            else out << ", ";
+        }
+        out << "}";
+    }
+
+    template<typename T>
+    std::ostream &operator<<(std::ostream &out, Matrix<T> matrix) {
+        auto const height = matrix.size();
+        if (height == 0) return out << "{}";
+
+        out << "{";
+        size_t i = 0;
+        for (auto const &row : matrix) {
+            out << "\n\t";
+            {
+                size_t width = row.size();
+                size_t j = 0;
+                for (auto const &element : row) {
+                    out << element;
+                    if (++j != width) out << " ; ";
+                }
+            }
+            //out << ((++i != height) ? "\n\t" : "\n");
+        }
+
+        return out << "\n}";
     }
 }// namespace simplex_method

@@ -8,26 +8,13 @@
 
 namespace simplex_method {
 
-    /*
-    template<typename T>
-    std::vector<T> parseVector(std::istream &in, char delimiter);
-
-    template<typename T>
-    std::vector<T> parseVector(std::istream &in, char const delimiter) {
-        int character;
-        while ((character = in.get()) != EOF) {
-
-        }
-    }
-*/
-
     // F = cx -> max
     // Ax <= b
     // x >= 0
     template<typename T>
     [[nodiscard]] NormalizedOptimizationTask<T> normalizedOptimizationTask(bool max, std::vector<T> const &c,
-                                                             std::vector<std::vector<T>> const &a,
-                                                             std::vector<T> const &b) {
+                                                                           std::vector<std::vector<T>> const &a,
+                                                                           std::vector<T> const &b) {
         auto const freeVariables = c.size();// n - m
         if (freeVariables == 0) throw std::invalid_argument("c cannot be empty");
         if (a.size() != freeVariables) throw std::invalid_argument("a and c should all be of the same length");

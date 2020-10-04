@@ -46,9 +46,10 @@ int performTask() {
     size_t m;
     std::cin >> m;
 
-    (std::cout << "Enter `a`-vector: ").flush();
+    std::cout << "Enter `A`-vector: \n";
     simplex_method::Matrix<N> a(m);
     for (size_t i = 0; i < m; ++i) {
+        (std::cout << "\tEnter line #" << i + 1 << ": ").flush();
         auto &condition = a[i];
         for (size_t j = 0; j < freeVariables; ++j) {
             N value;
@@ -67,28 +68,10 @@ int performTask() {
     }
 
     auto const task = simplex_method::normalizedOptimizationTask(true, c, a, b);
-    auto const result = task.compute();
+    auto const result = task.compute(std::cout);
 
     const bool failure = !std::holds_alternative<simplex_method::SuccessfulOptimizationResult<N>>(result);
     std::cout << "Result:\n" << result << std::endl;
 
     return failure;
-    /*
-    auto normalized = simplex_method::normalizedOptimizationTask<double>(
-            true, {2, 5, 3}, {{2, 1, 2}, {1, 2, 0}, {0, 0.5, 1}}, {6, 6, 2});
-    std::cout << normalized.compute() << std::endl;
-    std::cout << "Hello, World!"
-              << simplex_method::NormalizedOptimizationTask<double>(false, 5, 3, {1, -1},
-                                                                    {
-                                                                            {1, -2, 1, 2},
-                                                                            {2, -1, -1, 2},
-                                                                            {1, 1, 1, 5},
-                                                                    })
-                         .compute()
-              << std::endl;
-              */
-
-    return 0;
 }
-
-
