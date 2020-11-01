@@ -30,6 +30,8 @@ namespace simplex_method {
 
         [[nodiscard]] OptimizationResult<T> compute(std::ostream &debugOut) const;
 
+        std::ostream& appendTo(std::ostream& out) const;
+
     private:// helper methods
         void swapMatrixLines_(Matrix<T> &simplexMatrix, size_t iX, size_t jX) const;
 
@@ -208,6 +210,54 @@ namespace simplex_method {
         out << "}";
     }
 
+    template<typename T, typename P, typename S>
+    inline static std::ostream& appendVariable_(std::ostream& out, T const& value, size_t const index,
+                                                P prefix = "", S suffix = "") {
+        if (value == 0) return out;
+
+        out << prefix;
+        if (value != 1) out << value;
+
+        return out << 'x' << index << suffix;
+    }
+
+    template<typename T>
+    inline static std::ostream& appendVariable_(std::ostream& out, T const& value, size_t const index) {
+        appendVariable_(out, value, index, "", "");
+    }
+
+    template <typename T>
+    std::ostream& NormalizedOptimizationTask<T>::appendTo(std::ostream& out) const {
+        // F = coefficients[0] + sum({i = 1..n} coefficients[i] * x_i) -> max
+        // {i = 0..(m-1)} sum({j = 0..(n-m-1)} conditions[i][j] * x_j) + conditions[i][n - m] = conditions[n - m + 1]
+        out << "F = ";
+
+        {
+            auto const size = coefficients_.size();
+            for (size_t i = 0; i < size; ++i) {
+                if (i != 0) out << " + ";
+                appendVariable_(out, coefficients_[i], i + 1);
+            }
+        }
+        out << " -> " << (this->max_ ? "max" : "min");
+
+        {
+            size_t basisIndex = n_ - m_;
+            for (auto const& condition : this->conditions_) {
+                auto iterator = condition.cbegin();
+                out << "\n{ ";
+
+                {
+                    auto const preLastIndex = condition.size() - 2;
+                    for (size_t i = 0; i < preLastIndex; ++i) appendVariable_(out, condition[i], i + 1, "", " + ");
+                    appendVariable_(out, condition[preLastIndex], ++basisIndex) << " = " << condition[preLastIndex + 1];
+                }
+            }
+        }
+
+        return out;
+    }
+
     template<typename T>
     std::ostream &operator<<(std::ostream &out, Matrix<T> matrix) {
         auto const height = matrix.size();
@@ -231,3 +281,8 @@ namespace simplex_method {
         return out << "\n}";
     }
 }// namespace simplex_method
+
+template<typename T>
+std::ostream& operator<<(std::ostream& out, simplex_method::NormalizedOptimizationTask<T> const& task) {
+    return task.appendTo(out);
+}
