@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <simplex_method_definitions.hpp>
+#include <simplex_method_matrix.hpp>
 #include <variant>
 #include <vector>
 

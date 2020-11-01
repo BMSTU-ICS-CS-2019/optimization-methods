@@ -8,11 +8,42 @@
 template<typename T>
 int performTask();
 
+template<typename T>
+std::ostream &operator<<(std::ostream &out, simplex_method::Matrix<T> matrix) {
+    auto const height = matrix.size();
+    if (height == 0) return out << "{}";
+
+    out << "{";
+    size_t i = 0;
+    for (auto const& row : matrix) {
+        out << "\n\t";
+        {
+            size_t width = row.size();
+            size_t j = 0;
+            for (auto const& element : row) {
+                out << element;
+                if (++j != width) out << " ; ";
+            }
+        }
+        //out << ((++i != height) ? "\n\t" : "\n");
+    }
+
+    return out << "\n}";
+}
+
 // F = cx -> max
 // Ax <= b
 // x >= 0
 int main() {
     (std::cout << "Enter number-mode (1 for decimals, 2 for rationals): ").flush();
+
+    simplex_method::Matrix<int> ints = {
+            {1, 2},
+            {3, 4},
+            {5, 6}
+    };
+    std::cout << ints << std::endl;
+    std::cout << simplex_method::rotatedCopy(ints) << std::endl;
 
     char mode;
     std::cin >> mode;
