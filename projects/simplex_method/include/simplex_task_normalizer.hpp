@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <matrix.hpp>
 #include <simplex_method.hpp>
 #include <simplex_method_matrix.hpp>
 #include <stdexcept>

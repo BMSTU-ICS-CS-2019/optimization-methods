@@ -43,7 +43,7 @@ int main() {
             {5, 6}
     };
     std::cout << ints << std::endl;
-    std::cout << simplex_method::rotatedCopy(ints) << std::endl;
+    std::cout << simplex_method::transposedCopy(ints) << std::endl;
 
     char mode;
     std::cin >> mode;
