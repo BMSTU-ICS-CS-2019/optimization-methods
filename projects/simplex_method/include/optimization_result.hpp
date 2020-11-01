@@ -24,7 +24,7 @@ std::ostream &operator<<(std::ostream &out, simplex_method::SuccessfulOptimizati
     auto const size = result.x.size();
     {
         size_t i = 0;
-        for (auto const &value : result.x) {
+        for (auto const& value : result.x) {
             out << "x" << ++i << " = " << value;
             if (i != size) out << ", ";
         }

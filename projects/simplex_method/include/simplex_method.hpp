@@ -33,13 +33,13 @@ namespace simplex_method {
     private:// helper methods
         void swapMatrixLines_(Matrix<T> &simplexMatrix, size_t iX, size_t jX) const;
 
-        void appendVariableIndices_(std::vector<size_t> const &indices, std::ostream &out) const;
+        void appendVariableIndices_(std::vector<size_t> const& indices, std::ostream &out) const;
     };
 
     template<typename T>
     NormalizedOptimizationTask<T>::NormalizedOptimizationTask(bool max, size_t n, size_t m,
-                                                              std::vector<T> const &coefficients,
-                                                              std::vector<std::vector<T>> const &conditions)
+                                                              std::vector<T> const& coefficients,
+                                                              std::vector<std::vector<T>> const& conditions)
         : max_(max), n_(n), m_(m), coefficients_(coefficients), conditions_(conditions) {}
 
     template<typename T>
@@ -55,7 +55,7 @@ namespace simplex_method {
             auto &row = matrix[i];
             row.reserve(rowLength);
 
-            auto const &conditions = conditions_[i];
+            auto const& conditions = conditions_[i];
             auto const divisor = conditions[freeVariables];
             row.push_back(conditions[freeVariablesPlus1] / divisor);
             for (size_t j = 0; j < freeVariables; ++j) row.push_back(conditions[j] / divisor);
@@ -64,7 +64,7 @@ namespace simplex_method {
             auto &row = matrix[m_];
             row.reserve(rowLength);
             row.push_back(ZERO);// zero
-            for (auto const &coefficient : coefficients_) row.push_back(coefficient);
+            for (auto const& coefficient : coefficients_) row.push_back(coefficient);
         }
         appendVariableIndices_(indices, debugOut << "Generated initial simplex matrix:\n" << matrix << "\n");
         debugOut << std::endl;
@@ -120,7 +120,7 @@ namespace simplex_method {
 
         // step 3: find the most appropriate value of F
         {
-            auto const &lastRow = matrix[m_];
+            auto const& lastRow = matrix[m_];
 
             bool doContinue;
             do {
@@ -168,7 +168,7 @@ namespace simplex_method {
         auto const rowLength = n_ - m_ + 2u;
 
         // center of rotation
-        auto const &center = simplexMatrix[iX][jX];
+        auto const& center = simplexMatrix[iX][jX];
         auto const invertedCenter = -center;
 
         // rotated row
@@ -186,7 +186,7 @@ namespace simplex_method {
     }
 
     template<typename T>
-    void NormalizedOptimizationTask<T>::appendVariableIndices_(std::vector<size_t> const &indices,
+    void NormalizedOptimizationTask<T>::appendVariableIndices_(std::vector<size_t> const& indices,
                                                                std::ostream &out) const {
         out << "Free variables: {";
         size_t i = 0;
@@ -215,12 +215,12 @@ namespace simplex_method {
 
         out << "{";
         size_t i = 0;
-        for (auto const &row : matrix) {
+        for (auto const& row : matrix) {
             out << "\n\t";
             {
                 size_t width = row.size();
                 size_t j = 0;
-                for (auto const &element : row) {
+                for (auto const& element : row) {
                     out << element;
                     if (++j != width) out << " ; ";
                 }

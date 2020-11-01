@@ -12,9 +12,9 @@ namespace simplex_method {
     // Ax <= b
     // x >= 0
     template<typename T>
-    [[nodiscard]] NormalizedOptimizationTask<T> normalizedOptimizationTask(bool max, std::vector<T> const &c,
-                                                                           std::vector<std::vector<T>> const &a,
-                                                                           std::vector<T> const &b) {
+    [[nodiscard]] NormalizedOptimizationTask<T> normalizedOptimizationTask(bool max, std::vector<T> const& c,
+                                                                           std::vector<std::vector<T>> const& a,
+                                                                           std::vector<T> const& b) {
         auto const freeVariables = c.size();// n - m
         if (freeVariables == 0) throw std::invalid_argument("c cannot be empty");
         if (a.size() != freeVariables) throw std::invalid_argument("a and c should all be of the same length");
@@ -25,11 +25,11 @@ namespace simplex_method {
         {
             auto const rowLength = freeVariables + 2;
             size_t i = 0;
-            for (auto const &line : a) {
+            for (auto const& line : a) {
                 auto &condition = conditions[i];
 
                 condition.reserve(rowLength);
-                for (auto const &coefficient : line) condition.push_back(coefficient);
+                for (auto const& coefficient : line) condition.push_back(coefficient);
                 condition.push_back(1);// basis variable
                 condition.push_back(b[i++]);
             }
