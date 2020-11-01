@@ -33,7 +33,7 @@ namespace simplex_method {
     private:// helper methods
         void swapMatrixLines_(Matrix<T> &simplexMatrix, size_t iX, size_t jX) const;
 
-        void appendVariableIndices_(std::ostream &out, std::vector<size_t> const &indices) const;
+        void appendVariableIndices_(std::vector<size_t> const &indices, std::ostream &out) const;
     };
 
     template<typename T>
@@ -66,7 +66,7 @@ namespace simplex_method {
             row.push_back(ZERO);// zero
             for (auto const &coefficient : coefficients_) row.push_back(coefficient);
         }
-        appendVariableIndices_(debugOut << "Generated initial simplex matrix:\n" << matrix << "\n", indices);
+        appendVariableIndices_(indices, debugOut << "Generated initial simplex matrix:\n" << matrix << "\n");
         debugOut << std::endl;
 
         // step 2: reach target solution
@@ -104,7 +104,7 @@ namespace simplex_method {
                         std::swap(indices[resolvingColumn - 1], indices[rowLength - 2 + resolvingRow]);
                         swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
 
-                        appendVariableIndices_(debugOut << "Resulting matrix:\n" << matrix << "\n", indices);
+                        appendVariableIndices_(indices, debugOut << "Resulting matrix:\n" << matrix << "\n");
                         debugOut << std::endl;
 
                         // current super-iteration has reached its end
@@ -143,7 +143,7 @@ namespace simplex_method {
                         std::swap(indices[resolvingColumn - 1], indices[rowLength - 2 + resolvingRow]);
                         swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
 
-                        appendVariableIndices_(debugOut << "Resulting matrix:\n" << matrix << "\n", indices);
+                        appendVariableIndices_(indices, debugOut << "Resulting matrix:\n" << matrix << "\n");
                         debugOut << std::endl;
 
                         // current super-iteration has reached its end
@@ -186,7 +186,8 @@ namespace simplex_method {
     }
 
     template<typename T>
-    void NormalizedOptimizationTask<T>::appendVariableIndices_(std::ostream &out, std::vector<size_t> const& indices) const {
+    void NormalizedOptimizationTask<T>::appendVariableIndices_(std::vector<size_t> const &indices,
+                                                               std::ostream &out) const {
         out << "Free variables: {";
         size_t i = 0;
         {
