@@ -10,7 +10,7 @@ namespace simplex_method {
     using Matrix = std::vector<std::vector<T>>;
 
     template<typename T>
-    Matrix<T> rotatedCopy(Matrix<T> const& matrix) {
+    Matrix<T> transposedCopy(Matrix<T> const& matrix) {
         auto const rows = matrix.size(); // > 0
         if (rows == 0) return {};
 
