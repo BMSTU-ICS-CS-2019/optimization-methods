@@ -10,7 +10,7 @@ script:
   # Generate Conan files
   - mkdir conan
   - cd conan
-  - conan install
+  - conan install ..
   - cd ..
   # Build project
   - cmake . -G "Unix Makefiles"
