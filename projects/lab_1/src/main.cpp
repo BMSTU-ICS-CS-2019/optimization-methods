@@ -36,15 +36,6 @@ std::ostream &operator<<(std::ostream &out, simplex_method::Matrix<T> matrix) {
 // x >= 0
 int main() {
     (std::cout << "Enter number-mode (1 for decimals, 2 for rationals): ").flush();
-
-    simplex_method::Matrix<int> ints = {
-            {1, 2},
-            {3, 4},
-            {5, 6}
-    };
-    std::cout << ints << std::endl;
-    std::cout << simplex_method::transposedCopy(ints) << std::endl;
-
     char mode;
     std::cin >> mode;
     switch (mode) {
