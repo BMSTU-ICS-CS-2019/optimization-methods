@@ -51,73 +51,67 @@ namespace simplex_method {
         for (size_t index = 0; index < n_; index++) indices[index] = index;
 
         std::vector<std::vector<T>> matrix(m_ + 1u);
-        auto const freeVariables = n_ - m_, freeVariablesPlus1 = freeVariables + 1u,
-                   rowLength = freeVariablesPlus1 + 1u;
+        auto const freeVariables = n_ - m_, rowLength = freeVariables + 1u;
         for (size_t i = 0; i < m_; ++i) {
-            auto &row = matrix[i];
+            auto& row = matrix[i];
             row.reserve(rowLength);
 
             auto const& conditions = conditions_[i];
             auto const divisor = conditions[freeVariables];
-            row.push_back(conditions[freeVariablesPlus1] / divisor);
+            row.push_back(conditions[rowLength] / divisor);
             for (size_t j = 0; j < freeVariables; ++j) row.push_back(conditions[j] / divisor);
         }
         {
-            auto &row = matrix[m_];
+            auto& row = matrix[m_];
             row.reserve(rowLength);
-            row.push_back(ZERO);// zero
+            row.push_back(ZERO); // zero
             for (auto const& coefficient : coefficients_) row.push_back(coefficient);
         }
         appendVariableIndices_(indices, debugOut << "Generated initial simplex matrix:\n" << matrix << "\n");
         debugOut << std::endl;
 
         // step 2: reach target solution
-        {
-            bool doContinue;
-            do {
-                for (size_t rowIndex = 0u; rowIndex < m_; ++rowIndex) {
-                    auto &row = matrix[rowIndex];
-                    auto const si0 = row[0];
-                    if (si0 < ZERO) {
-                        // find solving coordinates
-                        size_t resolvingColumn = 0, resolvingRow;
-                        for (size_t j = 1u; j < rowLength; ++j) {// row
-                            T cell = row[j];
-                            if (cell < ZERO) {
-                                resolvingColumn = j;
-                                resolvingRow = 0;
+        do {
+            std::optional<size_t> negativeRowIndex;
+            for (size_t rowIndex = 0u; rowIndex < m_; ++rowIndex) {
+                auto& row = matrix[rowIndex];
+                auto const si0 = matrix[rowIndex][0];
 
-                                std::optional<T> ratio;
-                                for (size_t i = 0u; i < m_; ++i) {
-                                    auto const currentRatio = matrix[i][0] / matrix[i][resolvingColumn];
-                                    if (currentRatio > ZERO && (!ratio || currentRatio < *ratio)) {
-                                        ratio = currentRatio;
-                                        resolvingRow = i;
-                                    }
-                                }
-                                if (!ratio) return "Resolving row cannot be found";
+                if (si0 < ZERO) {
+                    negativeRowIndex = rowIndex;
+                    break;
+                }
+            }
+            if (!negativeRowIndex) break; // no more negative si0s
 
-                                break;// resolving coordinates got found
-                            }
-                        }
-                        if (resolvingColumn == 0) return "Resolving column cannot be found";
+            auto &row = matrix[*negativeRowIndex];
+            // find solving coordinates
+            size_t resolvingColumn = 0, resolvingRow;
+            for (size_t j = 1u; j < rowLength; ++j) if (row[j] < ZERO) {
+                resolvingColumn = j;
+                resolvingRow = 0;
 
-                        debugOut << "Swapping row " << resolvingRow << " with column " << resolvingColumn << std::endl;
-                        std::swap(indices[resolvingColumn - 1], indices[rowLength - 2 + resolvingRow]);
-                        swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
-
-                        appendVariableIndices_(indices, debugOut << "Resulting matrix:\n" << matrix << "\n");
-                        debugOut << std::endl;
-
-                        // current super-iteration has reached its end
-                        doContinue = true;
-                        break;
+                std::optional<T> ratio;
+                for (size_t i = 0u; i < m_; ++i) {
+                    auto const currentRatio = matrix[i][0] / matrix[i][resolvingColumn];
+                    if (currentRatio > ZERO && (!ratio || currentRatio < *ratio)) {
+                        ratio = currentRatio;
+                        resolvingRow = i;
                     }
                 }
+                if (!ratio) return "Resolving row cannot be found";
 
-                doContinue = false;
-            } while (doContinue);
-        }
+                break; // resolving coordinates got found
+            }
+            if (resolvingColumn == 0) return "Resolving column cannot be found";
+
+            debugOut << "Swapping row " << resolvingRow << " with column " << resolvingColumn << std::endl;
+            std::swap(indices[resolvingColumn - 1], indices[rowLength - 1 + resolvingRow]);
+            swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
+
+            appendVariableIndices_(indices, debugOut << "Resulting matrix:\n" << matrix << "\n");
+            debugOut << std::endl;
+        } while (true);
         debugOut << "Initial target solution has been found" << std::endl;
 
         // step 3: find the most appropriate value of F
@@ -127,45 +121,44 @@ namespace simplex_method {
             bool doContinue;
             do {
                 doContinue = false;
-                for (size_t resolvingColumn = 1u; resolvingColumn < rowLength; ++resolvingColumn) {
-                    if (lastRow[resolvingColumn] > ZERO) {
-                        size_t resolvingRow;
+                for (size_t resolvingColumn = 1u; resolvingColumn < rowLength; ++resolvingColumn) if (
+                    lastRow[resolvingColumn] > ZERO) {
+                    size_t resolvingRow;
 
-                        std::optional<T> ratio;
-                        for (size_t i = 0u; i < m_; ++i) {
-                            auto const currentRatio = matrix[i][0] / matrix[i][resolvingColumn];
-                            if (currentRatio > ZERO && (!ratio || currentRatio < *ratio)) {
-                                ratio = currentRatio;
-                                resolvingRow = i;
-                            }
+                    std::optional<T> ratio;
+                    for (size_t i = 0u; i < m_; ++i) {
+                        auto const currentRatio = matrix[i][0] / matrix[i][resolvingColumn];
+                        if (currentRatio > ZERO && (!ratio || currentRatio < *ratio)) {
+                            ratio = currentRatio;
+                            resolvingRow = i;
                         }
-                        if (!ratio) return "Resolving row cannot be found";
-
-                        debugOut << "Swapping row " << resolvingRow << " with column " << resolvingColumn << std::endl;
-                        std::swap(indices[resolvingColumn - 1], indices[rowLength - 2 + resolvingRow]);
-                        swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
-
-                        appendVariableIndices_(indices, debugOut << "Resulting matrix:\n" << matrix << "\n");
-                        debugOut << std::endl;
-
-                        // current super-iteration has reached its end
-                        doContinue = true;
-                        break;
                     }
+                    if (!ratio) return "Resolving row cannot be found";
+
+                    debugOut << "Swapping row " << resolvingRow << " with column " << resolvingColumn << std::endl;
+                    std::swap(indices[resolvingColumn - 1], indices[rowLength - 1 + resolvingRow]);
+                    swapMatrixLines_(matrix, resolvingRow, resolvingColumn);
+
+                    appendVariableIndices_(indices, debugOut << "Resulting matrix:\n" << matrix << "\n");
+                    debugOut << std::endl;
+
+                    // current super-iteration has reached its end
+                    doContinue = true;
+                    break;
                 }
             } while (doContinue);
         }
         debugOut << "Target solution has been found" << std::endl;
 
-        std::vector<T> x(n_);// all values will be default-constructed, i.e. zeroed
-        //for (size_t slot = 0; slot < freeVariables; ++slot) x[indices[slot]] = ZERO;
+        std::vector<T> x(n_); // all values will be default-constructed, i.e. zeroed
+        // for (size_t slot = 0; slot < freeVariables; ++slot) x[indices[slot]] = ZERO;
         for (size_t slot = freeVariables, i = 0; slot < n_; ++slot) { x[indices[slot]] = matrix.at(i++).at(0); }
 
         return SuccessfulOptimizationResult<T>{max_ ? -matrix[m_][0] : matrix[m_][0], x};
     }
 
-    template<typename T>
-    void NormalizedOptimizationTask<T>::swapMatrixLines_(Matrix<T> &simplexMatrix, const size_t iX,
+    template <typename T>
+    void NormalizedOptimizationTask<T>::swapMatrixLines_(Matrix<T>& simplexMatrix, const size_t iX,
                                                          const size_t jX) const {
         auto const rowLength = n_ - m_ + 2u;
 
@@ -174,7 +167,7 @@ namespace simplex_method {
         auto const invertedCenter = -center;
 
         // rotated row
-        auto &rowIX = simplexMatrix[iX];
+        auto& rowIX = simplexMatrix[iX];
         //@formatter:off
         for (size_t i = 0; i <= m_; ++i) if (i != iX) {
             auto &row = simplexMatrix[i];
