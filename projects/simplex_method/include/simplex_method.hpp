@@ -223,7 +223,7 @@ namespace simplex_method {
 
     template<typename T>
     inline static std::ostream& appendVariable_(std::ostream& out, T const& value, size_t const index) {
-        appendVariable_(out, value, index, "", "");
+        return appendVariable_(out, value, index, "", "");
     }
 
     template <typename T>
@@ -244,7 +244,6 @@ namespace simplex_method {
         {
             size_t basisIndex = n_ - m_;
             for (auto const& condition : this->conditions_) {
-                auto iterator = condition.cbegin();
                 out << "\n{ ";
 
                 {
@@ -264,7 +263,6 @@ namespace simplex_method {
         if (height == 0) return out << "{}";
 
         out << "{";
-        size_t i = 0;
         for (auto const& row : matrix) {
             out << "\n\t";
             {
